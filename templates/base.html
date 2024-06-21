@@ -23,12 +23,18 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="/courses">Courses</a>
                             </li>
+                            {% if current_user.is_authenticated %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="/sign-out">Sign Out</a>
+                            </li>
+                            {% else %}
                             <li class="nav-item">
                                 <a class="nav-link" href="/sign-in">Sign In</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="/sign-up">Sign Up</a>
-                            </li>                            
+                            </li>
+                            {% endif %}                            
                         </ul>
                     </div>
                 </div>       
@@ -38,6 +44,14 @@
     
     <main style="flex: 1;">
         <div class="container my-5 p-3">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
             {% block content %}{% endblock %}
         </div>
     </main>
@@ -45,13 +59,9 @@
     <footer class="border-top">
         <div class="container p-3">
             <p>
-                &copy; {{ current_year }} Course Tracker
+                &copy; <script>document.write(new Date().getFullYear());</script> Course Tracker
             </p>
         </div>
     </footer>
-
-    <script>
-        let current_year = new Date().getFullYear();
-    </script>
 </body>
 </html>
