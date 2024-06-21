@@ -12,7 +12,7 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'sign_in'
 bcrypt = Bcrypt(app)
 
-from models import Course, User
+from models import Course, Enrollment, User
 from forms import CourseForm, SignInForm, SignUpForm
 
 with app.app_context():
@@ -26,6 +26,7 @@ def load_user(user_id):
 def index():
     courses = Course.query.limit(5).all()
     return render_template('index.html', courses=courses)
+
 
 @app.route('/sign-in', methods=['GET', 'POST'])
 def sign_in():
@@ -60,6 +61,7 @@ def sign_up():
 def sign_out():
     logout_user()
     return redirect(url_for('index'))
+
 
 @app.route('/courses')
 def course_list():
@@ -114,6 +116,46 @@ def course_delete(course_id):
     db.session.commit()
     flash('Course deleted!', 'success')
     return redirect(url_for('dashboard'))
+
+
+@app.route('/course/<course_id>/enroll', methods=['POST'])
+@login_required
+def enroll(course_id):
+    course = Course.query.get_or_404(course_id)
+    if Enrollment.query.filter_by(user_id=current_user.id, course_id=course.id).first():
+        flash('You are already enrolled in this course.', 'warning')
+        return redirect(url_for('course_detail', course_id=course_id))
+    enrollment = Enrollment(user_id=current_user.id, course_id=course_id)
+    db.session.add(enrollment)
+    db.session.commit()
+    flash('Enrolled in course!', 'success')
+    return redirect(url_for('course_detail', course_id=course_id))
+
+@app.route('/course/<course_id>/unenroll', methods=['POST'])
+@login_required
+def unenroll(course_id):
+    course = Course.query.get_or_404(course_id)
+    enrollment = Enrollment.query.filter_by(user_id=current_user.id, course_id=course.id).first()
+    if not enrollment:
+        flash('You are not enrolled in this course.', 'warning')
+        return redirect(url_for('course_detail', course_id=course_id))
+    db.session.delete(enrollment)
+    db.session.commit()
+    flash('Unenrolled from course!', 'success')
+    return redirect(url_for('course_detail'))
+
+@app.route('/course/<course_id>/complete', methods=['POST'])
+@login_required
+def complete_course(course_id):
+    course = Course.query.get_or_404(course_id)
+    enrollment = Enrollment.query.filter_by(user_id=current_user.id, course_id=course.id).first()
+    if not enrollment:
+        flash('You need to enroll in the course first.', 'warning')
+        return redirect(url_for('course_detail', course_id=course.id))
+    enrollment.completed = True
+    db.session.commit()
+    flash('Course marked as completed!', 'success')
+    return redirect(url_for('course_detail'))
 
 if __name__ == '__main__':
     app.run(debug=True)

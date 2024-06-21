@@ -59,7 +59,7 @@
                 </div>
             </div>
 
-            <div class="col-12 col-md-4">                
+            <div class="col-12 col-md-4">
                 <div class="card">
                     <div class="card-body">
                         <img src="{{ course.image_url }}" alt="{{ course.title }}" class="card-img-top">
@@ -88,16 +88,16 @@
                                         Status: <span class="badge bg-warning">In Progress</span>
                                     </p>
 
-                                    <form method="POST" action="#">
+                                    <form method="POST" action="{{ url_for('complete_course', course_id=course.id) }}">
                                         <button type="submit" class="btn btn-success btn-block mt-2 w-100">Mark as Completed</button>
                                     </form>
                                 {% endif %}
 
-                                <form method="POST" action="#">
+                                <form method="POST" action="{{ url_for('unenroll', course_id=course.id) }}">
                                     <button type="submit" class="btn btn-danger btn-block mt-2 w-100">Unenroll from Course</button>
                                 </form>
                             {% else %}
-                                <form method="POST" action="#">
+                                <form method="POST" action="{{ url_for('enroll', course_id=course.id) }}">
                                     <button type="submit" class="btn btn-primary btn-block w-100">Enroll in Course</button>
                                 </form>
                             {% endif %}
