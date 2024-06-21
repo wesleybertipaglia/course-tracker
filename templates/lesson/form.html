@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Lesson Form
+{% endblock %}
+
+{% block breadcrumbs %}
+    <a href="{{ url_for('course_list') }}">All Courses</a> &raquo; Lesson Form
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12 col-md-6 mx-auto">
+            <h2>{{ 'Edit Lesson' if form.title.data else 'New Lesson' }}</h2>
+            <form method="POST" class="d-flex flex-column gap-2">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.title.label(class="form-label") }}
+                    {{ form.title(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.description.label(class="form-label") }}
+                    {{ form.description(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.video_link.label(class="form-label") }}
+                    {{ form.video_link(class="form-control") }}
+                </div>
+                <div class="form-group mt-2">
+                    {{ form.submit(class="btn btn-primary rounded-1") }}
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
