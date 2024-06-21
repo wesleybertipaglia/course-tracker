@@ -81,10 +81,12 @@ def completion_lesson_status(course_id):
 @app.route('/courses/<course_id>')
 def course_detail(course_id):
     course = Course.query.get_or_404(course_id)
-    enrollment = Enrollment.query.filter_by(user_id=current_user.id, course_id=course.id).first()
-    lessons = Lesson.query.filter_by(course_id=course_id).all()
     completions = completion_lesson_status(course_id)
-    return render_template('course/detail.html', course=course, lessons=lessons, enrollment=enrollment, completions=completions)
+    lessons = Lesson.query.filter_by(course_id=course_id).all()
+    if current_user.is_authenticated:
+        enrollment = Enrollment.query.filter_by(user_id=current_user.id, course_id=course.id).first()    
+        return render_template('course/detail.html', course=course, lessons=lessons, enrollment=enrollment, completions=completions)
+    return render_template('course/detail.html', course=course, lessons=lessons, completions=completions)
 
 @app.route('/courses/new', methods=['GET', 'POST'])
 @login_required
@@ -185,15 +187,17 @@ def lesson_new(course_id):
     return render_template('lesson/form.html', form=form)
 
 @app.route('/lesson/<lesson_id>')
-@login_required
 def lesson_detail(lesson_id):
     lesson = Lesson.query.get_or_404(lesson_id)
     course = Course.query.get_or_404(lesson.course_id)
+    next_lesson = Lesson.query.filter_by(course_id=course.id).filter(Lesson.order > lesson.order).first()
+    if not current_user.is_authenticated:
+        return render_template('lesson/detail.html', lesson=lesson, course=course, next_lesson=next_lesson)
     if course.user_id != current_user.id and not Enrollment.query.filter_by(user_id=current_user.id, course_id=course.id).first():
         flash('You do not have access to this lesson.', 'danger')
         return redirect(url_for('course_detail', course_id=course.id))
-    next_lesson = Lesson.query.filter_by(course_id=course.id).filter(Lesson.order > lesson.order).first()
-    return render_template('lesson/detail.html', lesson=lesson, course=course, next_lesson=next_lesson)
+    completion = Completion.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()    
+    return render_template('lesson/detail.html', lesson=lesson, course=course, completion=completion, next_lesson=next_lesson)
 
 @app.route('/lesson/<lesson_id>/edit', methods=['GET', 'POST'])
 @login_required

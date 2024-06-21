@@ -27,17 +27,15 @@
                 </form>
             {% endif %}
             
-            {% if enrollment %}
-                {% if completions.get(lesson.id, False) %}
-                    <form method="POST" action="{{ url_for('lesson_complete', lesson_id=lesson.id) }}" class="d-inline">
-                        <input type="hidden" name="_method" value="DELETE">
-                        <button type="submit" class="btn btn-warning">Mark as Incomplete</button>
-                    </form>
-                {% else %}
-                    <form method="POST" action="{{ url_for('lesson_complete', lesson_id=lesson.id) }}" class="d-inline">
-                        <button type="submit" class="btn btn-success">Mark as Completed</button>
-                    </form>
-                {% endif %}
+            {% if completion %}
+                <form method="POST" action="{{ url_for('lesson_complete', lesson_id=lesson.id) }}" class="d-inline">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn btn-warning">Mark as Incomplete</button>
+                </form>
+            {% else %}
+                <form method="POST" action="{{ url_for('lesson_complete', lesson_id=lesson.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-success">Mark as Completed</button>
+                </form>
             {% endif %}
 
             <a href="{{ url_for('course_detail', course_id=lesson.course_id) }}" class="btn btn-primary">Back to Course</a>
