@@ -12,7 +12,7 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'sign_in'
 bcrypt = Bcrypt(app)
 
-from models import Course, Enrollment, Lesson, User
+from models import Completion, Course, Enrollment, Lesson, User
 from forms import CourseForm, LessonForm, SignInForm, SignUpForm
 
 with app.app_context():
@@ -68,12 +68,23 @@ def course_list():
     courses = Course.query.all()
     return render_template('course/list.html', courses=courses)
 
+def completion_lesson_status(course_id):
+    if current_user.is_authenticated:
+        lessons = Lesson.query.filter_by(course_id=course_id).all()
+        completions = {}
+        for lesson in lessons:
+            completion = Completion.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
+            completions[lesson.id] = (completion is not None)
+        return completions
+    return {}
+
 @app.route('/courses/<course_id>')
 def course_detail(course_id):
     course = Course.query.get_or_404(course_id)
     enrollment = Enrollment.query.filter_by(user_id=current_user.id, course_id=course.id).first()
     lessons = Lesson.query.filter_by(course_id=course_id).all()
-    return render_template('course/detail.html', course=course, lessons=lessons, enrollment=enrollment)
+    completions = completion_lesson_status(course_id)
+    return render_template('course/detail.html', course=course, lessons=lessons, enrollment=enrollment, completions=completions)
 
 @app.route('/courses/new', methods=['GET', 'POST'])
 @login_required
@@ -160,13 +171,13 @@ def complete_course(course_id):
     flash('Course marked as completed!', 'success')
     return redirect(url_for('course_detail', course_id=course.id))
 
-
 @app.route('/course/<course_id>/lesson/new', methods=['GET', 'POST'])
 @login_required
 def lesson_new(course_id):
     form = LessonForm()
     if form.validate_on_submit():
-        lesson = Lesson(title=form.title.data, description=form.description.data, video_link=form.video_link.data, course_id=course_id)
+        order = Lesson.query.filter_by(course_id=course_id).count() + 1
+        lesson = Lesson(title=form.title.data, description=form.description.data, video_link=form.video_link.data, course_id=course_id, order=order)
         db.session.add(lesson)
         db.session.commit()
         flash('Lesson added!', 'success')
@@ -181,7 +192,8 @@ def lesson_detail(lesson_id):
     if course.user_id != current_user.id and not Enrollment.query.filter_by(user_id=current_user.id, course_id=course.id).first():
         flash('You do not have access to this lesson.', 'danger')
         return redirect(url_for('course_detail', course_id=course.id))
-    return render_template('lesson/detail.html', lesson=lesson, course=course)
+    next_lesson = Lesson.query.filter_by(course_id=course.id).filter(Lesson.order > lesson.order).first()
+    return render_template('lesson/detail.html', lesson=lesson, course=course, next_lesson=next_lesson)
 
 @app.route('/lesson/<lesson_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -217,6 +229,24 @@ def lesson_delete(lesson_id):
     db.session.commit()
     flash('Lesson deleted!', 'success')
     return redirect(url_for('course_detail', course_id=lesson.course_id))
+
+@app.route('/lesson/<lesson_id>/complete', methods=['POST'])
+@login_required
+def lesson_complete(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+    completion = Completion.query.filter_by(user_id=current_user.id, lesson_id=lesson.id).first()
+
+    if completion:
+        db.session.delete(completion)
+        db.session.commit()
+        flash('Lesson marked as incomplete!', 'info')
+    else:
+        completion = Completion(user_id=current_user.id, lesson_id=lesson.id, completed=True)
+        db.session.add(completion)
+        db.session.commit()
+        flash('Lesson marked as completed!', 'success')
+
+    return redirect(url_for('lesson_detail', lesson_id=lesson.id))
 
 if __name__ == '__main__':
     app.run(debug=True)

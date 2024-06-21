@@ -38,7 +38,20 @@
                                         </form>
                                     {% endif %}
                                     
-                                    
+                                    {% if completions.get(lesson.id, False) %}                                    
+                                        <form method="POST" action="{{ url_for('lesson_complete', lesson_id=lesson.id) }}" class="d-inline">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <button type="submit" class="btn btn-warning btn-sm" title="Mark as Incomplete">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                        </form>                                    
+                                    {% else %}
+                                        <form method="POST" action="{{ url_for('lesson_complete', lesson_id=lesson.id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-success btn-sm" title="Mark as Completed">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -65,7 +78,21 @@
                         {% endif %}
                         
                         <div class="mt-3 w-100">
-                            {% if enrollment %}                                
+                            {% if enrollment %}
+                                {% if completions.get(course.id, False) %}
+                                    <p>
+                                        Status: <span class="badge bg-success">Completed</span>
+                                    </p>
+                                {% else %}
+                                    <p>
+                                        Status: <span class="badge bg-warning">In Progress</span>
+                                    </p>
+
+                                    <form method="POST" action="{{ url_for('complete_course', course_id=course.id) }}">
+                                        <button type="submit" class="btn btn-success btn-block mt-2 w-100">Mark as Completed</button>
+                                    </form>
+                                {% endif %}
+
                                 <form method="POST" action="{{ url_for('unenroll', course_id=course.id) }}">
                                     <button type="submit" class="btn btn-danger btn-block mt-2 w-100">Unenroll from Course</button>
                                 </form>
