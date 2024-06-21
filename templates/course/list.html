@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}
+    All Courses
+{% endblock %}
+
+{% block content %}
+    <h2>All Available Courses</h2>
+    <p>
+        Explore and enroll in courses that interest you.
+    </p>
+
+    <div class="row">
+        {% for course in courses %}
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <img src="{{ course.image_url }}" class="card-img-top" alt="{{ course.title }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ course.title }}</h5>
+                        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-primary">View Course</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div> 
+{% endblock %}

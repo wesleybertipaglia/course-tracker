@@ -80,7 +80,7 @@ def course_new():
         db.session.add(course)
         db.session.commit()
         flash('Course created!', 'success')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('course_list'))
     return render_template('course/form.html', form=form)
 
 @app.route('/courses/<course_id>/edit', methods=['GET', 'POST'])

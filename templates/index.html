@@ -9,4 +9,25 @@
         <h1 class="display-4">Welcome to Course Tracker!</h1>
         <p class="lead">Manage your courses and track your progress.</p>
     </div>
+
+    <div class="mt-4">
+        <h2>Available Courses</h2>
+        <p>
+            <span>Explore and enroll in courses that interest you.</span>
+            <a href="{{ url_for('course_list') }}">View All Courses</a>
+        </p>
+        <div class="row mt-3">
+            {% for course in courses %}
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <img src="{{ course.image_url }}" class="card-img-top" alt="{{ course.title }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ course.title }}</h5>
+                            <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-primary">View Course</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>        
+    </div>
 {% endblock %}
