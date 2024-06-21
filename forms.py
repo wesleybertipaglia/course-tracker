@@ -19,3 +19,9 @@ class CourseForm(FlaskForm):
     description = TextAreaField('Description', validators=[DataRequired(), Length(min=2, max=500)])
     image_url = StringField('Image URL', validators=[DataRequired(), Length(min=2, max=255)])
     submit = SubmitField('Submit')
+
+class LessonForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired(), Length(min=2, max=150)])
+    description = TextAreaField('Description', validators=[DataRequired(), Length(min=2, max=500)])
+    video_link = StringField('Video Link', validators=[DataRequired(), Length(min=2, max=255)])
+    submit = SubmitField('Add Lesson')
