@@ -12,8 +12,8 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'sign_in'
 bcrypt = Bcrypt(app)
 
-from models import Course, Enrollment, User
-from forms import CourseForm, SignInForm, SignUpForm
+from models import Course, Enrollment, Lesson, User
+from forms import CourseForm, LessonForm, SignInForm, SignUpForm
 
 with app.app_context():
     db.create_all()
@@ -71,7 +71,9 @@ def course_list():
 @app.route('/courses/<course_id>')
 def course_detail(course_id):
     course = Course.query.get_or_404(course_id)
-    return render_template('course/detail.html', course=course)
+    enrollment = Enrollment.query.filter_by(user_id=current_user.id, course_id=course.id).first()
+    lessons = Lesson.query.filter_by(course_id=course_id).all()
+    return render_template('course/detail.html', course=course, lessons=lessons, enrollment=enrollment)
 
 @app.route('/courses/new', methods=['GET', 'POST'])
 @login_required
@@ -96,6 +98,7 @@ def course_edit(course_id):
     if form.validate_on_submit():
         course.title = form.title.data
         course.description = form.description.data
+        course.image_url = form.image_url.data
         db.session.commit()
         flash('Course updated!', 'success')
         return redirect(url_for('course_detail', course_id=course.id))
@@ -142,7 +145,7 @@ def unenroll(course_id):
     db.session.delete(enrollment)
     db.session.commit()
     flash('Unenrolled from course!', 'success')
-    return redirect(url_for('course_detail'))
+    return redirect(url_for('course_detail', course_id=course_id))
 
 @app.route('/course/<course_id>/complete', methods=['POST'])
 @login_required
@@ -155,7 +158,65 @@ def complete_course(course_id):
     enrollment.completed = True
     db.session.commit()
     flash('Course marked as completed!', 'success')
-    return redirect(url_for('course_detail'))
+    return redirect(url_for('course_detail', course_id=course.id))
+
+
+@app.route('/course/<course_id>/lesson/new', methods=['GET', 'POST'])
+@login_required
+def lesson_new(course_id):
+    form = LessonForm()
+    if form.validate_on_submit():
+        lesson = Lesson(title=form.title.data, description=form.description.data, video_link=form.video_link.data, course_id=course_id)
+        db.session.add(lesson)
+        db.session.commit()
+        flash('Lesson added!', 'success')
+        return redirect(url_for('course_detail', course_id=course_id))
+    return render_template('lesson/form.html', form=form)
+
+@app.route('/lesson/<lesson_id>')
+@login_required
+def lesson_detail(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+    course = Course.query.get_or_404(lesson.course_id)
+    if course.user_id != current_user.id and not Enrollment.query.filter_by(user_id=current_user.id, course_id=course.id).first():
+        flash('You do not have access to this lesson.', 'danger')
+        return redirect(url_for('course_detail', course_id=course.id))
+    return render_template('lesson/detail.html', lesson=lesson, course=course)
+
+@app.route('/lesson/<lesson_id>/edit', methods=['GET', 'POST'])
+@login_required
+def lesson_edit(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+    course = Course.query.get_or_404(lesson.course_id)
+    if course.user_id != current_user.id:
+        flash('You do not have access to this lesson.', 'danger')
+        return redirect(url_for('course_detail', course_id=course.id))
+    form = LessonForm()
+    if form.validate_on_submit():
+        lesson.title = form.title.data
+        lesson.description = form.description.data
+        lesson.video_link = form.video_link.data
+        db.session.commit()
+        flash('Lesson updated!', 'success')
+        return redirect(url_for('course_detail', course_id=lesson.course_id))
+    elif request.method == 'GET':
+        form.title.data = lesson.title
+        form.description.data = lesson.description
+        form.video_link.data = lesson.video_link
+    return render_template('lesson/form.html', form=form)
+
+@app.route('/lesson/<lesson_id>/delete', methods=['POST'])
+@login_required
+def lesson_delete(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+    course = Course.query.get_or_404(lesson.course_id)
+    if course.user_id != current_user.id:
+        flash('You do not have access to this lesson.', 'danger')
+        return redirect(url_for('course_detail', course_id=course.id))
+    db.session.delete(lesson)
+    db.session.commit()
+    flash('Lesson deleted!', 'success')
+    return redirect(url_for('course_detail', course_id=lesson.course_id))
 
 if __name__ == '__main__':
     app.run(debug=True)
