@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Sign In
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12 col-md-6 mx-auto">
+            <h2>Sign In</h2>
+            
+            <form method="POST" class="d-flex flex-column gap-2">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.username.label }} {{ form.username(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.password.label }} {{ form.password(class="form-control") }}
+                </div>
+                <div class="form-group mt-2">
+                    {{ form.submit(class="btn btn-primary rounded-1") }}
+                </div>
+            </form>
+
+            <div class="border-top mt-3 pt-3">
+                <p>
+                    Don't have an account? <a href="{{ url_for('sign_up') }}">Sign Up</a>
+                </p>
+            </div>
+        </div>        
+    </div>
+{% endblock %}
