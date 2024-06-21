@@ -26,6 +26,9 @@
                             </li>
                             {% if current_user.is_authenticated %}
                             <li class="nav-item">
+                                <a class="nav-link" href="/dashboard">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" href="/sign-out">Sign Out</a>
                             </li>
                             {% else %}

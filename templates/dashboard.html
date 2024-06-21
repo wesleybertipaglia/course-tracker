@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Dashboard
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div>
+            <h1>Welcome, {{ current_user.name }}!</h1>
+            
+            <ul>
+                <li><a href="{{ url_for('sign_out') }}">Sign Out</a></li>
+
+                <li><a href="#">Change Password</a></li>
+
+                <li><a href="#">Delete Account</a></li>        
+            </ul>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">My Courses</h2>
+                        <a href="{{ url_for('course_new') }}" class="btn btn-primary mb-3">Create New Course</a>
+                        <ul class="list-group">
+                            {% for course in courses %}
+                                <li class="list-group-item">
+                                    <a href="{{ url_for('course_detail', course_id=course.id) }}">{{ course.title }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">Enrolled Courses</h2>
+                        <ul class="list-group">
+                            {% for enrollment in enrollments %}
+                                <li class="list-group-item">
+                                    <a href="{{ url_for('course_detail', course_id=enrollment.course.id) }}">{{ enrollment.course.title }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

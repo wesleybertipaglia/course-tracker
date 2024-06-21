@@ -62,6 +62,12 @@ def sign_out():
     logout_user()
     return redirect(url_for('index'))
 
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    courses = Course.query.filter_by(user_id=current_user.id).all()
+    enrollments = Enrollment.query.filter_by(user_id=current_user.id).all()
+    return render_template('dashboard.html', courses=courses, enrollments=enrollments)
 
 @app.route('/courses')
 def course_list():
